@@ -1,0 +1,24 @@
+Import("env")
+Export("env")
+
+os_wii = [
+    "os_wii.cpp",
+    "file_access_wii.cpp",
+    "dir_access_wii.cpp",
+    "ip_wii.cpp",
+    "drivers/audio/audio_driver_ogc.cpp",
+]
+
+bld = Builder(action=env["ENV"]["DEVKITPRO"] + "/tools/bin/elf2dol $SOURCE $TARGET")
+env.Append(BUILDERS={"Dol": bld})
+
+if env["PROGSUFFIX"].endswith(".exe"):
+    env["PROGSUFFIX"] = env["PROGSUFFIX"][0:-4] + ".elf"
+else:
+    env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".elf"
+
+prog = env.add_program("#bin/godot", ["godot_wii.cpp"] + os_wii)
+if env["target"] == "release":
+    dolsuff = env["PROGSUFFIX"][0:-4] + ".dol"
+    dol = env.Dol("#bin/godot" + dolsuff, "#bin/godot" + env["PROGSUFFIX"])
+    Depends(dol, prog)
